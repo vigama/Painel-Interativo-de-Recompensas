@@ -1,4 +1,4 @@
-<index.html>
+<!DOCTYPE.html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -435,7 +435,7 @@
     </section>
   </main>
 
-  <!-- Sons -->
+  <!-- Sons (substitua os arquivos se quiser outros efeitos) -->
   <audio id="soundGain">
     <source src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" type="audio/ogg">
   </audio>
@@ -447,10 +447,11 @@
   <div class="confetti" id="confettiContainer"></div>
 
   <script>
+    // ---------------- CONFIGURAÇÕES BÁSICAS ----------------
     const MAX_HEARTS = 5;
-    const POINTS_PER_HEART = 10;
-    const MAX_POINTS = MAX_HEARTS * POINTS_PER_HEART;
-    const PENALTY_PER_ACTIVITY = 2.5;
+    const POINTS_PER_HEART = 10; // cada coração vale 10 pontos
+    const MAX_POINTS = MAX_HEARTS * POINTS_PER_HEART; // 50
+    const PENALTY_PER_ACTIVITY = 2.5; // pontos perdidos por atividade
 
     const STORAGE_KEY = "auraGameAlunos";
 
@@ -480,23 +481,265 @@
     const soundLose = document.getElementById("soundLose");
     const confettiContainer = document.getElementById("confettiContainer");
 
+    // ---------------- LOCALSTORAGE ----------------
     function carregarAlunos() {
       const data = localStorage.getItem(STORAGE_KEY);
-      alunos = data ? JSON.parse(data) : [];
+      if (data) {
+        try {
+          alunos = JSON.parse(data);
+        } catch (e) {
+          alunos = [];
+        }
+      } else {
+        alunos = [];
+      }
     }
 
     function salvarAlunos() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(alunos));
     }
 
+    // ---------------- UTILITÁRIOS ----------------
     function gerarId() {
       return "aluno_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
     }
 
     function formatDateTime(date) {
       const d = new Date(date);
-      return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+      const dia = String(d.getDate()).padStart(2, "0");
+      const mes = String(d.getMonth() + 1).padStart(2, "0");
+      const ano = d.getFullYear();
+      const hora = String(d.getHours()).padStart(2, "0");
+      const min = String(d.getMinutes()).padStart(2, "0");
+      return `${dia}/${mes}/${ano} ${hora}:${min}`;
     }
 
     function calcularHearts(pontos) {
-      if (pontos <= 
+      if (pontos <= 0) return 0;
+      if (pontos >= MAX_POINTS) return MAX_HEARTS;
+      return Math.floor(pontos / POINTS_PER_HEART);
+    }
+
+    function calcularBonusMedia(hearts) {
+      if (hearts >= 5) return 1.0;
+      if (hearts === 3) return 0.7;
+      if (hearts === 0) return 0.0;
+      // para outros casos intermediários, você pode ajustar como quiser:
+      if (hearts === 4) return 0.85;
+      if (hearts === 2) return 0.4;
+      if (hearts === 1) return 0.2;
+      return 0.0;
+    }
+
+    function atualizarSelectAlunos() {
+      alunoSelect.innerHTML = '<option value="">-- Nenhum aluno selecionado --</option>';
+      alunos.forEach(a => {
+        const opt = document.createElement("option");
+        opt.value = a.id;
+        opt.textContent = `${a.nome} (${a.serie} - ${a.turma})`;
+        alunoSelect.appendChild(opt);
+      });
+    }
+
+    function desenharHearts(hearts) {
+      let str = "";
+      for (let i = 0; i < MAX_HEARTS; i++) {
+        str += i < hearts ? "💖" : "🖤";
+      }
+      return str;
+    }
+
+    function limparMensagens() {
+      msgBonus.style.display = "none";
+      msgAuraBaixa.style.display = "none";
+      msgGameOver.style.display = "none";
+      msgAuraMax.style.display = "none";
+    }
+
+    function mostrarMensagens(pontos, hearts) {
+      limparMensagens();
+
+      if (hearts === MAX_HEARTS) {
+        msgBonus.className = "message msg-bonus";
+        msgBonus.innerHTML = '<span>Parabéns! Você irá receber um Bônus!</span>';
+        msgBonus.style.display = "block";
+
+        msgAuraMax.className = "message msg-aura-max";
+        msgAuraMax.innerHTML = '<span>VOCÊ TEM AURA MÁXIMA!</span>';
+        msgAuraMax.style.display = "block";
+
+        soltarConfete();
+      } else if (pontos <= MAX_POINTS / 2 && pontos > 0) {
+        msgAuraBaixa.className = "message msg-aura-baixa";
+        msgAuraBaixa.innerHTML = '<span>AURA baixa! Atenção!</span>';
+        msgAuraBaixa.style.display = "block";
+      }
+
+      if (pontos <= 0) {
+        msgGameOver.className = "message msg-game-over";
+        msgGameOver.innerHTML = '<span>Game Over! Você perdeu toda AURA!</span>';
+        msgGameOver.style.display = "block";
+      }
+    }
+
+    function atualizarTabelaHistorico(aluno) {
+      tabelaHistorico.innerHTML = "";
+      aluno.historico.forEach(item => {
+        const tr = document.createElement("tr");
+        const tdData = document.createElement("td");
+        const tdAtividade = document.createElement("td");
+        const tdDelta = document.createElement("td");
+        const tdPontos = document.createElement("td");
+
+        tdData.textContent = formatDateTime(item.data);
+        tdAtividade.textContent = item.atividade;
+        tdDelta.textContent = (item.delta > 0 ? "+" : "") + item.delta.toFixed(1);
+        tdPontos.textContent = item.pontosApos.toFixed(1);
+
+        tr.appendChild(tdData);
+        tr.appendChild(tdAtividade);
+        tr.appendChild(tdDelta);
+        tr.appendChild(tdPontos);
+        tabelaHistorico.appendChild(tr);
+      });
+    }
+
+    function atualizarPainel() {
+      if (!alunoSelecionadoId) {
+        painelAluno.style.display = "none";
+        return;
+      }
+      const aluno = alunos.find(a => a.id === alunoSelecionadoId);
+      if (!aluno) {
+        painelAluno.style.display = "none";
+        return;
+      }
+
+      painelAluno.style.display = "block";
+      infoAluno.textContent = `${aluno.nome} - ${aluno.serie} (${aluno.turma})`;
+      pontosAtuais.textContent = aluno.pontos.toFixed(1);
+
+      const hearts = calcularHearts(aluno.pontos);
+      heartsBar.textContent = desenharHearts(hearts);
+
+      const bonus = calcularBonusMedia(hearts);
+      bonusMedia.textContent = "+" + bonus.toFixed(2).replace(".", ",");
+
+      mostrarMensagens(aluno.pontos, hearts);
+      atualizarTabelaHistorico(aluno);
+    }
+
+    // ---------------- CONFETE ----------------
+    function soltarConfete() {
+      confettiContainer.innerHTML = "";
+      confettiContainer.style.display = "block";
+      const cores = ["#ff6b6b", "#feca57", "#48dbfb", "#1dd1a1", "#5f27cd", "#ff9ff3"];
+
+      for (let i = 0; i < 80; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti-piece";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.background = cores[Math.floor(Math.random() * cores.length)];
+        piece.style.animationDelay = (Math.random() * 0.7) + "s";
+        piece.style.transform = `translateY(-20px) rotateZ(${Math.random() * 360}deg)`;
+        confettiContainer.appendChild(piece);
+      }
+
+      setTimeout(() => {
+        confettiContainer.style.display = "none";
+        confettiContainer.innerHTML = "";
+      }, 3000);
+    }
+
+    // ---------------- EVENTOS ----------------
+    btnAddAluno.addEventListener("click", () => {
+      const nome = nomeInput.value.trim();
+      const serie = serieInput.value.trim();
+      const turma = turmaInput.value.trim();
+
+      if (!nome || !serie || !turma) {
+        alert("Preencha nome, série e turma para adicionar o aluno.");
+        return;
+      }
+
+      const novoAluno = {
+        id: gerarId(),
+        nome,
+        serie,
+        turma,
+        pontos: MAX_POINTS, // começa com 50 pontos (5 corações)
+        historico: [
+          {
+            data: new Date().toISOString(),
+            atividade: "Início do jogo (AURA máxima)",
+            delta: 0,
+            pontosApos: MAX_POINTS
+          }
+        ]
+      };
+
+      alunos.push(novoAluno);
+      salvarAlunos();
+      atualizarSelectAlunos();
+
+      alunoSelecionadoId = novoAluno.id;
+      alunoSelect.value = novoAluno.id;
+      atualizarPainel();
+
+      nomeInput.value = "";
+      serieInput.value = "";
+      turmaInput.value = "";
+    });
+
+    alunoSelect.addEventListener("change", () => {
+      alunoSelecionadoId = alunoSelect.value || null;
+      atualizarPainel();
+    });
+
+    document.querySelectorAll(".activity-btn button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (!alunoSelecionadoId) {
+          alert("Selecione um aluno primeiro.");
+          return;
+        }
+        const atividade = btn.getAttribute("data-activity");
+        const aluno = alunos.find(a => a.id === alunoSelecionadoId);
+        if (!aluno) return;
+
+        const pontosAntes = aluno.pontos;
+        const heartsAntes = calcularHearts(pontosAntes);
+
+        aluno.pontos -= PENALTY_PER_ACTIVITY;
+        if (aluno.pontos < 0) aluno.pontos = 0;
+        if (aluno.pontos > MAX_POINTS) aluno.pontos = MAX_POINTS;
+
+        const pontosDepois = aluno.pontos;
+        const heartsDepois = calcularHearts(pontosDepois);
+
+        aluno.historico.push({
+          data: new Date().toISOString(),
+          atividade,
+          delta: -PENALTY_PER_ACTIVITY,
+          pontosApos: pontosDepois
+        });
+
+        salvarAlunos();
+        atualizarPainel();
+
+        if (heartsDepois < heartsAntes) {
+          soundLose.currentTime = 0;
+          soundLose.play().catch(() => {});
+        } else if (heartsDepois > heartsAntes) {
+          soundGain.currentTime = 0;
+          soundGain.play().catch(() => {});
+        }
+      });
+    });
+
+    // ---------------- INICIALIZAÇÃO ----------------
+    carregarAlunos();
+    atualizarSelectAlunos();
+    atualizarPainel();
+  </script>
+</body>
+</html>
