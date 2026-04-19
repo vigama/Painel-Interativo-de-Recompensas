@@ -1,0 +1,502 @@
+<index.html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel Gamificado de AURA</title>
+  <style>
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #1b2735, #090a0f);
+      color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #5f27cd);
+      color: #111;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin: 5px 0 0;
+      font-size: 14px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 20px auto 40px;
+      padding: 0 15px;
+    }
+
+    .card {
+      background: rgba(15, 15, 25, 0.95);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h2 span.emoji {
+      font-size: 24px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .form-row label {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    input, select, button {
+      border-radius: 8px;
+      border: none;
+      padding: 8px 10px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input, select {
+      background: rgba(255,255,255,0.08);
+      color: #f5f5f5;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    input::placeholder {
+      color: rgba(255,255,255,0.5);
+    }
+
+    button {
+      cursor: pointer;
+      background: linear-gradient(135deg, #ff6b6b, #feca57);
+      color: #111;
+      font-weight: 600;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+      box-shadow: 0 5px 14px rgba(0,0,0,0.7);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+
+    .small {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .aluno-select-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .aluno-select-row select {
+      flex: 1;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    .stat-box {
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 10px 12px;
+      min-width: 150px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .hearts-bar {
+      font-size: 26px;
+      letter-spacing: 4px;
+    }
+
+    .message {
+      margin-top: 10px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .message span {
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+
+    .msg-bonus span {
+      background: rgba(46, 213, 115, 0.15);
+      border: 1px solid rgba(46, 213, 115, 0.6);
+      color: #2ed573;
+    }
+
+    .msg-aura-baixa span {
+      background: rgba(255, 203, 5, 0.1);
+      border: 1px solid rgba(255, 203, 5, 0.7);
+      color: #ffcb05;
+    }
+
+    .msg-game-over span {
+      background: rgba(255, 71, 87, 0.15);
+      border: 1px solid rgba(255, 71, 87, 0.7);
+      color: #ff4757;
+    }
+
+    .msg-aura-max span {
+      background: rgba(126, 214, 223, 0.15);
+      border: 1px solid rgba(126, 214, 223, 0.7);
+      color: #7ed6df;
+    }
+
+    .activities-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .activity-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-align: center;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .activity-btn span {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .activity-btn button {
+      width: 100%;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+
+    .activity-emoji {
+      font-size: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 6px 8px;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(255,255,255,0.08);
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .confetti {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: 999;
+      display: none;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 8px;
+      height: 14px;
+      background: #feca57;
+      opacity: 0.9;
+      border-radius: 2px;
+      animation: fall 2.5s linear forwards;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-20px) rotateZ(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh) rotateZ(360deg);
+        opacity: 0;
+      }
+    }
+
+    .grade-info {
+      font-size: 13px;
+      margin-top: 6px;
+      opacity: 0.9;
+    }
+
+    .grade-highlight {
+      font-weight: 700;
+      color: #feca57;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 20px;
+      }
+      .hearts-bar {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Painel Gamificado de AURA 💖</h1>
+    <p>Recompensas, perdas e muita AURA para os alunos do 6º ao 9º ano!</p>
+  </header>
+
+  <main>
+    <!-- Cadastro de aluno -->
+    <section class="card">
+      <h2><span class="emoji">🧑‍🎓</span> Cadastro de Aluno</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nome">Nome do aluno</label>
+          <input id="nome" type="text" placeholder="Ex.: Ana Souza" />
+        </div>
+        <div class="form-group">
+          <label for="serie">Série</label>
+          <select id="serie">
+            <option value="">Selecione</option>
+            <option>6º ano</option>
+            <option>7º ano</option>
+            <option>8º ano</option>
+            <option>9º ano</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="turma">Turma</label>
+          <input id="turma" type="text" placeholder="Ex.: A, B, C..." />
+        </div>
+      </div>
+      <button id="btnAddAluno">Adicionar aluno ao jogo</button>
+      <p class="small">Cada novo aluno começa com <strong>5 corações</strong> (AURA máxima) e <strong>50 pontos</strong>.</p>
+    </section>
+
+    <!-- Seleção de aluno e painel -->
+    <section class="card">
+      <h2><span class="emoji">🎮</span> Painel de AURA do Aluno</h2>
+      <div class="aluno-select-row">
+        <label for="alunoSelect">Selecione o aluno:</label>
+        <select id="alunoSelect">
+          <option value="">-- Nenhum aluno selecionado --</option>
+        </select>
+      </div>
+
+      <div id="painelAluno" style="display:none;">
+        <div class="stats">
+          <div class="stat-box">
+            <div class="stat-label">Aluno</div>
+            <div class="stat-value" id="infoAluno"></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Pontos atuais</div>
+            <div class="stat-value" id="pontosAtuais">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Corações (vidas)</div>
+            <div class="stat-value hearts-bar" id="heartsBar">💖💖💖💖💖</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Bônus na média final</div>
+            <div class="stat-value" id="bonusMedia">+0,00</div>
+          </div>
+        </div>
+
+        <div class="message" id="msgBonus" style="display:none;"></div>
+        <div class="message" id="msgAuraBaixa" style="display:none;"></div>
+        <div class="message" id="msgGameOver" style="display:none;"></div>
+        <div class="message" id="msgAuraMax" style="display:none;"></div>
+
+        <p class="grade-info">
+          Regras de bônus na média final:
+          <br>• <span class="grade-highlight">5 corações</span> → +1,0 ponto na média
+          <br>• <span class="grade-highlight">3 corações</span> → +0,70 ponto na média
+          <br>• <span class="grade-highlight">0 coração</span> → +0,00 ponto na média
+        </p>
+
+        <hr style="margin:15px 0; border-color: rgba(255,255,255,0.1);" />
+
+        <h3 style="margin-top:0;">Atividades que fazem perder AURA 😈</h3>
+        <p class="small">
+          Cada atividade abaixo retira <strong>2,5 pontos</strong> da AURA. A cada <strong>10 pontos perdidos</strong>, o aluno perde <strong>1 coração</strong>.
+        </p>
+
+        <div class="activities-grid">
+          <div class="activity-btn">
+            <div class="activity-emoji">🚶‍♂️</div>
+            <span>Saiu do seu grupo</span>
+            <button data-activity="Saiu do seu grupo">Registrar</button>
+          </div>
+          <div class="activity-btn">
+            <div class="activity-emoji">📚</div>
+            <span>Não trouxe material</span>
+            <button data-activity="Não trouxe material">Registrar</button>
+          </div>
+          <div class="activity-btn">
+            <div class="activity-emoji">📝</div>
+            <span>Não fez a tarefa proposta</span>
+            <button data-activity="Não fez a tarefa proposta">Registrar</button>
+          </div>
+          <div class="activity-btn">
+            <div class="activity-emoji">🤝</div>
+            <span>Não participou das atividades em grupo</span>
+            <button data-activity="Não participou das atividades em grupo">Registrar</button>
+          </div>
+          <div class="activity-btn">
+            <div class="activity-emoji">😡</div>
+            <span>Desrespeitou o colega</span>
+            <button data-activity="Desrespeitou o colega">Registrar</button>
+          </div>
+        </div>
+
+        <h3 style="margin-top:18px;">Histórico de Pontos do Aluno 📊</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Atividade</th>
+              <th>Variação de pontos</th>
+              <th>Pontos após ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaHistorico">
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Sons -->
+  <audio id="soundGain">
+    <source src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" type="audio/ogg">
+  </audio>
+  <audio id="soundLose">
+    <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
+  </audio>
+
+  <!-- Confete -->
+  <div class="confetti" id="confettiContainer"></div>
+
+  <script>
+    const MAX_HEARTS = 5;
+    const POINTS_PER_HEART = 10;
+    const MAX_POINTS = MAX_HEARTS * POINTS_PER_HEART;
+    const PENALTY_PER_ACTIVITY = 2.5;
+
+    const STORAGE_KEY = "auraGameAlunos";
+
+    let alunos = [];
+    let alunoSelecionadoId = null;
+
+    const nomeInput = document.getElementById("nome");
+    const serieInput = document.getElementById("serie");
+    const turmaInput = document.getElementById("turma");
+    const btnAddAluno = document.getElementById("btnAddAluno");
+    const alunoSelect = document.getElementById("alunoSelect");
+    const painelAluno = document.getElementById("painelAluno");
+
+    const infoAluno = document.getElementById("infoAluno");
+    const pontosAtuais = document.getElementById("pontosAtuais");
+    const heartsBar = document.getElementById("heartsBar");
+    const bonusMedia = document.getElementById("bonusMedia");
+
+    const msgBonus = document.getElementById("msgBonus");
+    const msgAuraBaixa = document.getElementById("msgAuraBaixa");
+    const msgGameOver = document.getElementById("msgGameOver");
+    const msgAuraMax = document.getElementById("msgAuraMax");
+
+    const tabelaHistorico = document.getElementById("tabelaHistorico");
+
+    const soundGain = document.getElementById("soundGain");
+    const soundLose = document.getElementById("soundLose");
+    const confettiContainer = document.getElementById("confettiContainer");
+
+    function carregarAlunos() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      alunos = data ? JSON.parse(data) : [];
+    }
+
+    function salvarAlunos() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(alunos));
+    }
+
+    function gerarId() {
+      return "aluno_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+    }
+
+    function formatDateTime(date) {
+      const d = new Date(date);
+      return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+    }
+
+    function calcularHearts(pontos) {
+      if (pontos <= 
